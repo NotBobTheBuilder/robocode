@@ -12,11 +12,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
-
-import static net.sf.robocode.roborumble.util.PropertiesUtil.getProperties;
 
 
 /**
@@ -33,10 +30,6 @@ public class FileTransfer {
 	private static int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 	private static int readTimeout = DEFAULT_READ_TIMEOUT;
 	private static int sessionTimeout = DEFAULT_SESSION_TIMEOUT;
-
-	static {
-		readProperties();
-	}
 	
 	/**
 	 * Represents the download status returned when downloading files.
@@ -618,40 +611,10 @@ public class FileTransfer {
 		if (!isOutput) {
 			// Allow both GZip and Deflate (ZLib) encodings
 			conn.setRequestProperty("Accept-Encoding", "gzip, deflate");
+            conn.setRequestProperty("Accept", "application/json");
 			conn.setRequestProperty("User-Agent", "RoboRumble@Home - gzip, deflate");
 		}
 		return conn;
 	}
 
-	/**
-	 * Reads the roborumble.properties file and stores property values into global variables.
-	 */
-	private static void readProperties() {
-		Properties props = getProperties("./roborumble/roborumble.properties");
-
-		// Get connection timeout
-		String value = props.getProperty("connection.open.timeout");
-
-		if (value != null) {
-			try {
-				connectionTimeout = Integer.parseInt(value);
-			} catch (NumberFormatException ignore) {}
-		}
-
-		// Get connection read timeout
-		value = props.getProperty("connection.read.timeout");
-		if (value != null) {
-			try {
-				readTimeout = Integer.parseInt(value);
-			} catch (NumberFormatException ignore) {}
-		}
-
-		// Get download session timeout
-		value = props.getProperty("download.session.timeout");
-		if (value != null) {
-			try {
-				sessionTimeout = Integer.parseInt(value);
-			} catch (NumberFormatException ignore) {}
-		}
-	}
 }
