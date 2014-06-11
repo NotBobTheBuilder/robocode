@@ -40,17 +40,6 @@ public class RoboRumbleAtHome {
                 continue;
             }
             engine.runBattle(battle);
-            //			System.out.println("Uploading results ...");
-            //           ResultsUpload upload = new ResultsUpload(parameters, version);
-
-            // Uploads the results to the server
-//            upload.uploadResults();
-
-            // Updates the number of battles from the info received from the server
-            //           System.out.println("Updating number of battles fought ...");
-//            UpdateRatingFiles updater = new UpdateRatingFiles(parameters);
-
-//            updater.updateRatings();
         }
 
     }

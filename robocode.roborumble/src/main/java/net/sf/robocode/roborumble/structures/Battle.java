@@ -13,7 +13,8 @@ public class Battle extends ServerObject {
     numbots INTEGER
      */
 
-    private BattleResult[] results;
+    private BattleResult[] results = null;
+    private Bot[] bots;
     private int numbots;
     private Game game;
 
@@ -21,7 +22,11 @@ public class Battle extends ServerObject {
 
     }
 
-    public Battle(RobotResults[] roboResults) {
+    public Battle(Bot[] bots) {
+        this.bots = bots;
+    }
+
+    public void setResults(RobotResults[] roboResults) {
         this.numbots = roboResults.length;
         results = new BattleResult[this.numbots];
         for (int i = 0; i < this.numbots; i++) {
@@ -34,10 +39,15 @@ public class Battle extends ServerObject {
     }
 
     public Bot[] getBots() {
-        return null;
+        return bots;
+    }
+
+    public boolean foughtYet() {
+        return results != null;
     }
 
     public Battle setResults(BattleResults[] sortedResults) {
+        System.out.println(sortedResults[0].getScore());
         return this;
     }
 

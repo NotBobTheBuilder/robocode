@@ -1,5 +1,6 @@
 package net.sf.robocode.roborumble.structures;
 
+import com.google.gson.JsonElement;
 import net.sf.robocode.roborumble.netengine.DownloadFailedException;
 import net.sf.robocode.roborumble.structures.builders.ServerObjectBuilder;
 
@@ -7,6 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author Jack Wearden <jack@jackwearden.co.uk>
@@ -18,7 +21,7 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
     private int fieldWidth;
     private int fieldHeight;
     private Bot[] bots = null;
-    private Bot[][] battleQueue = null;
+    private Queue<Battle> battleQueue = new LinkedList<Battle>();
     private int rounds;
 
     private Tournament tournament;
@@ -99,12 +102,25 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
 
     @Override
     public boolean hasNext() {
-        return false;
+        if (battleQueue.size() == 0) {
+            JsonElement queue;
+            try {
+                queue = ServerObjectBuilder.getJSONFromServer(new URL(tournament.url + this.uri + "battlequeue"));
+                for (Battle b : ServerObjectBuilder.getGson().fromJson(queue.getAsJsonArray(), Battle[].class)) {
+                    battleQueue.add(b);
+                }
+            } catch (DownloadFailedException e) {
+                return false;
+            } catch (MalformedURLException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public Battle next() {
-        return null;
+        return battleQueue.remove();
     }
 
     @Override

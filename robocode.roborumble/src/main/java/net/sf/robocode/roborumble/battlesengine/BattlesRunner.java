@@ -46,11 +46,14 @@ public class BattlesRunner {
             @Override
             public void onBattleError(final BattleErrorEvent event) {
                 Logger.realErr.println(event.getError());
+                engine.removeBattleListener(this);
             }
 
             @Override
             public void onBattleCompleted(final BattleCompletedEvent event) {
                 battle.setResults(event.getSortedResults()).save();
+                System.out.println("Whoosh!");
+                engine.removeBattleListener(this);
             }
         });
 		// Initialize objects

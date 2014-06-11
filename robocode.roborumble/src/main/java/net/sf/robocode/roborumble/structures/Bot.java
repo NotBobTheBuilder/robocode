@@ -1,5 +1,6 @@
 package net.sf.robocode.roborumble.structures;
 
+import com.google.gson.JsonObject;
 import net.sf.robocode.roborumble.netengine.FileTransfer;
 
 import java.io.InputStream;
@@ -27,6 +28,7 @@ public class Bot extends ServerObject {
     private String path; // This is a different "path" to that on the server - here it is the path to the local jar.
     private int size;
 
+    // URL -> bot
     private static HashMap<String, Bot> INSTANCES = new HashMap<String, Bot>();
 
     public Bot() {
@@ -47,10 +49,6 @@ public class Bot extends ServerObject {
 
     public int getSize() {
         return 2000;
-    }
-
-    public static Bot fromName(String botName) {
-        return INSTANCES.get(botName);
     }
 
     public boolean ensureBotDownloaded(String tempDir, String botsRepo) {
@@ -124,4 +122,29 @@ public class Bot extends ServerObject {
         }
     }
 
+    public static Bot getInstance(JsonObject bot) {
+        Bot b = getInstance(bot.get("url").getAsString());
+        if (bot.has("name")) {
+            b.setName(bot.get("name").getAsString());
+        }
+        return b;
+    }
+
+    public static Bot getInstance(String url) {
+        if (INSTANCES.get(url) == null) {
+            Bot b = new Bot();
+
+            b.setUri(url);
+            INSTANCES.put(url, b);
+        }
+        return INSTANCES.get(url);
+    }
+
+    private void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
