@@ -11,6 +11,7 @@ package net.sf.robocode.roborumble.battlesengine;
 import net.sf.robocode.io.Logger;
 import net.sf.robocode.roborumble.structures.Battle;
 import net.sf.robocode.roborumble.structures.Bot;
+import net.sf.robocode.roborumble.structures.UploadFailedException;
 import robocode.control.*;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
@@ -28,16 +29,16 @@ import robocode.control.events.BattleErrorEvent;
  */
 public class BattlesRunner {
 	private static RobotResults[] lastResults;
-	private static IRobocodeEngine engine;
+	private IRobocodeEngine engine;
 
 	public BattlesRunner() {
-		initialize();
 	}
 
-	private void initialize() {
+	private IRobocodeEngine getEngine() {
 		if (engine == null) {
 			engine = new RobocodeEngine();
 		}
+        return engine;
 	}
 
 	public void runBattle(final Battle battle) {
@@ -51,7 +52,11 @@ public class BattlesRunner {
 
             @Override
             public void onBattleCompleted(final BattleCompletedEvent event) {
-                battle.setResults(event.getSortedResults()).save();
+                try {
+                    battle.setResults(event.getSortedResults()).save();
+                } catch (UploadFailedException e) {
+                    e.printStackTrace();
+                }
                 System.out.println("Whoosh!");
                 engine.removeBattleListener(this);
             }

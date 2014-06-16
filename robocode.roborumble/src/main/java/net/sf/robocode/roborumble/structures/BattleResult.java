@@ -20,6 +20,7 @@ public class BattleResult extends ServerObject {
     private int score;
     private int damage;
     private int firsts;
+    private String name;
 
     public BattleResult() {
 
@@ -40,5 +41,25 @@ public class BattleResult extends ServerObject {
                 roboResult.getBulletDamage(),
                 roboResult.getFirsts()
         );
+    }
+
+    public int getFirsts() {
+        return firsts;
+    }
+
+    public String getBot() {
+        return name;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getRank() {
+        return rank;
     }
 }

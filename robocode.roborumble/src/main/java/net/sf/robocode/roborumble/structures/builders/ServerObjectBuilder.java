@@ -3,9 +3,7 @@ package net.sf.robocode.roborumble.structures.builders;
 import com.google.gson.*;
 import net.sf.robocode.roborumble.netengine.DownloadFailedException;
 import net.sf.robocode.roborumble.netengine.FileTransfer;
-import net.sf.robocode.roborumble.structures.Game;
-import net.sf.robocode.roborumble.structures.ServerObject;
-import net.sf.robocode.roborumble.structures.Tournament;
+import net.sf.robocode.roborumble.structures.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +34,9 @@ public abstract class ServerObjectBuilder<T extends ServerObject> implements Jso
             conn.setRequestProperty("User-Agent", "RoboRumble@Home - gzip, deflate");
 
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                System.err.println("No HTTP OK in ServerObjectBuilder.getJSONFromServer");
+                System.err.println(conn.getResponseCode());
+                System.err.println(url.toString());
                 throw new DownloadFailedException();
             }
 
@@ -43,6 +44,7 @@ public abstract class ServerObjectBuilder<T extends ServerObject> implements Jso
             return new JsonParser().parse(new BufferedReader(new InputStreamReader(in)).readLine());
 
         } catch (IOException e) {
+            e.printStackTrace(System.err);
             throw new DownloadFailedException();
         } finally {
             if (conn != null) {
@@ -60,6 +62,9 @@ public abstract class ServerObjectBuilder<T extends ServerObject> implements Jso
             gson = new GsonBuilder()
                     .registerTypeAdapter(Tournament.class, new TournamentBuilder())
                     .registerTypeAdapter(Game.class, new GameBuilder())
+                    .registerTypeAdapter(Bot.class, new BotBuilder("./roborumble/temp/", "./robots/"))
+                    .registerTypeAdapter(Battle.class, new BattleBuilder())
+                    .registerTypeAdapter(BattleResult.class, new BattleResultBuilder())
                     .create();
         }
         return gson;

@@ -1,5 +1,6 @@
 package net.sf.robocode.roborumble.structures;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.sf.robocode.roborumble.netengine.DownloadFailedException;
 import net.sf.robocode.roborumble.structures.builders.ServerObjectBuilder;
@@ -38,7 +39,7 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
 
     public static Game getInstance(String uri, String name) {
         if (GAMES.get(uri) == null) {
-            GAMES.put(uri, new Game(uri, name));
+            new Game(uri, name);
         }
         return GAMES.get(uri);
     }
@@ -93,7 +94,7 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
 
     public void downloadBots(String tempDir, String botsRepo) throws DownloadFailedException {
         for (Bot b : this.getBots()) {
-            boolean downloaded = b.ensureBotDownloaded(tempDir, botsRepo);
+            boolean downloaded = b.ensureBotDownloaded();
             if (!downloaded) {
                 System.err.println("Could not download " + b.getName());
             }
@@ -102,16 +103,22 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
 
     @Override
     public boolean hasNext() {
+        System.out.println("checking battle queue");
         if (battleQueue.size() == 0) {
             JsonElement queue;
             try {
-                queue = ServerObjectBuilder.getJSONFromServer(new URL(tournament.url + this.uri + "battlequeue"));
-                for (Battle b : ServerObjectBuilder.getGson().fromJson(queue.getAsJsonArray(), Battle[].class)) {
+                queue = ServerObjectBuilder.getJSONFromServer(new URL(tournament.url + this.uri + "/battlequeue"));
+                System.out.println(queue);
+                JsonArray a = queue.getAsJsonArray();
+                for (Battle b : ServerObjectBuilder.getGson().fromJson(a, Battle[].class)) {
+                    b.setGame(this);
                     battleQueue.add(b);
                 }
             } catch (DownloadFailedException e) {
+                System.err.println("DFE @ Game.hasNext");
                 return false;
             } catch (MalformedURLException e) {
+                System.err.println("MalURLEx @ Game.hasNext");
                 return false;
             }
         }
@@ -120,6 +127,8 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
 
     @Override
     public Battle next() {
+        System.out.println("Yielding next battle");
+        System.out.print(battleQueue.peek());
         return battleQueue.remove();
     }
 
@@ -133,4 +142,12 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "Game instance: " + this.name;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
 }

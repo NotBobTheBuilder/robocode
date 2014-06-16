@@ -1,9 +1,13 @@
 package net.sf.robocode.roborumble.structures;
 
 import com.google.gson.JsonObject;
+import net.sf.robocode.roborumble.netengine.DownloadFailedException;
 import net.sf.robocode.roborumble.netengine.FileTransfer;
 
-import java.io.InputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -30,6 +34,8 @@ public class Bot extends ServerObject {
 
     // URL -> bot
     private static HashMap<String, Bot> INSTANCES = new HashMap<String, Bot>();
+    private String tempDir;
+    private String botsRepo;
 
     public Bot() {
 
@@ -51,21 +57,39 @@ public class Bot extends ServerObject {
         return 2000;
     }
 
-    public boolean ensureBotDownloaded(String tempDir, String botsRepo) {
+    public boolean ensureBotDownloaded() throws DownloadFailedException {
         String tempFileName = tempDir + this.getFileName();
         String repositoryFileName = botsRepo + this.getFileName();
 
-        FileTransfer.DownloadStatus downloadStatus = FileTransfer.download(this.getURL(this.uri), tempFileName, null);
-
-        if (downloadStatus == FileTransfer.DownloadStatus.FILE_NOT_FOUND) {
-            System.out.println("Could not find " + this.getName() + " from " + this.uri);
-            return false;
-        } else if (downloadStatus == FileTransfer.DownloadStatus.COULD_NOT_CONNECT) {
-            System.out.println("Could not connect to " + this.uri);
-            return false;
+        URL url;
+        try {
+            url = new URL(this.getURL(Tournament.getInstance().url));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            throw new DownloadFailedException();
         }
 
-        // Check the bot and save it into the repository
+        HttpURLConnection conn;
+        try {
+            conn = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new DownloadFailedException();
+        }
+
+        conn.addRequestProperty("accept", "application/java-archive");
+
+        FileOutputStream f;
+        try {
+            f = new FileOutputStream(this.tempDir);
+            BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            int bit;
+            while ((bit = r.read()) != -1) {
+                f.write(bit);
+            }
+        } catch (IOException e) {
+            throw new DownloadFailedException();
+        }
 
         if (checkJarFile(tempFileName, this.getFileName())) {
             if (!FileTransfer.copy(tempFileName, repositoryFileName)) {
@@ -90,11 +114,7 @@ public class Bot extends ServerObject {
         String bot = botName.substring(0, botName.indexOf(" "));
 
         bot = bot.replace('.', '/');
-//		if (isteams.equals("YES")) {
-//			bot += ".team";
-//		} else {
         bot += ".properties";
-//		}
 
         try {
             JarFile jarf = new JarFile(file);
@@ -113,9 +133,6 @@ public class Bot extends ServerObject {
 
             return (botName.equals(classname + " " + version));
 
-//          For Teams
-//			String teamVersion = parameters.getProperty("team.version", "");
-//			return (botname.equals(botname.substring(0, botname.indexOf(" ")) + " " + teamVersion));
         } catch (Exception e) {
             System.out.println(e);
             return false;
@@ -146,5 +163,18 @@ public class Bot extends ServerObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Bot instance: " + this.getName();
+    }
+
+    public void setTempDir(String tempDir) {
+        this.tempDir = tempDir;
+    }
+
+    public void setBotsRepo(String botsRepo) {
+        this.botsRepo = botsRepo;
     }
 }

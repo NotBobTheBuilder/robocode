@@ -30,16 +30,15 @@ import java.net.URL;
 public class RoboRumbleAtHome {
 
     public RoboRumbleAtHome(Game game) {
-
         final BattlesRunner engine = new BattlesRunner();
 
         for (Battle battle : game) {
             try {
-                game.downloadBots();
+                battle.run(engine);
             } catch (DownloadFailedException e) {
-                continue;
+                System.err.println("Failed downloading bots. Giving up");
+                break;
             }
-            engine.runBattle(battle);
         }
 
     }
@@ -55,13 +54,12 @@ public class RoboRumbleAtHome {
               String host = args[0];
               url = new URL(host);
               tournament = ServerObjectBuilder.getTournament(url);
-              System.out.println(tournament);
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("ERROR: Host left unspecified. Please specify on command line");
             System.exit(1);
             return;
         } catch (MalformedURLException e) {
-            System.err.println("ERROR: URL malformed - check roborumble.txt settings");
+            System.err.println("ERROR: URL malformed");
             System.exit(2);
             return;
         } catch (DownloadFailedException e) {
@@ -75,7 +73,7 @@ public class RoboRumbleAtHome {
             System.exit(4);
             return;
         }
-
+        System.out.println("Running game " + tournament.getDefaultGame());
         new RoboRumbleAtHome(tournament.getDefaultGame());
 
 	}
