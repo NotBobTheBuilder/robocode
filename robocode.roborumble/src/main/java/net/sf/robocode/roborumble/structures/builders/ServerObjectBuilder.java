@@ -37,15 +37,14 @@ public abstract class ServerObjectBuilder<T extends ServerObject> implements Jso
                 System.err.println("No HTTP OK in ServerObjectBuilder.getJSONFromServer");
                 System.err.println(conn.getResponseCode());
                 System.err.println(url.toString());
-                throw new DownloadFailedException();
+                throw new DownloadFailedException("in ServerObjectBuilder::getJSONFromServer: got non-200 HTTP code");
             }
 
             in = FileTransfer.getInputStream(conn);
             return new JsonParser().parse(new BufferedReader(new InputStreamReader(in)).readLine());
-
         } catch (IOException e) {
-            e.printStackTrace(System.err);
-            throw new DownloadFailedException();
+         e.printStackTrace(System.err);
+            throw new DownloadFailedException("in ServerObjectBuilder::getJSONFromServer: Error downloading JSON");
         } finally {
             if (conn != null) {
                 conn.disconnect();

@@ -66,7 +66,7 @@ public class Bot extends ServerObject {
             url = new URL(this.getURL(Tournament.getInstance().url));
         } catch (MalformedURLException e) {
             e.printStackTrace();
-            throw new DownloadFailedException();
+            throw new DownloadFailedException("in Bot::ensureBotDownloaded: invalid bot URL created");
         }
 
         HttpURLConnection conn;
@@ -74,21 +74,21 @@ public class Bot extends ServerObject {
             conn = (HttpURLConnection) url.openConnection();
         } catch (IOException e) {
             e.printStackTrace();
-            throw new DownloadFailedException();
+            throw new DownloadFailedException("in Bot::ensureBotDownloaded: Failed to connect to server for download");
         }
 
         conn.addRequestProperty("accept", "application/java-archive");
 
         FileOutputStream f;
         try {
-            f = new FileOutputStream(this.tempDir);
+            f = new FileOutputStream(tempFileName);
             BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             int bit;
             while ((bit = r.read()) != -1) {
                 f.write(bit);
             }
         } catch (IOException e) {
-            throw new DownloadFailedException();
+            throw new DownloadFailedException("in Bot::ensureBotDownloaded: Failed to save bot jar");
         }
 
         if (checkJarFile(tempFileName, this.getFileName())) {

@@ -31,6 +31,7 @@ public class Battle extends ServerObject {
 
     public Battle(Bot[] bots) {
         this.bots = bots;
+        System.out.println(this);
     }
 
     public void setResults(RobotResults[] roboResults) {
@@ -80,6 +81,7 @@ public class Battle extends ServerObject {
     }
 
     public void run(BattlesRunner r) throws DownloadFailedException{
+        System.out.println("Running " + this.toString());
         for (Bot b : bots) {
             b.ensureBotDownloaded();
         }

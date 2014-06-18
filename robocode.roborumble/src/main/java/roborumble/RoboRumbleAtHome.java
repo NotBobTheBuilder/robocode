@@ -37,6 +37,8 @@ public class RoboRumbleAtHome {
                 battle.run(engine);
             } catch (DownloadFailedException e) {
                 System.err.println("Failed downloading bots. Giving up");
+                System.err.println(e.getMessage());
+                e.printStackTrace();
                 break;
             }
         }

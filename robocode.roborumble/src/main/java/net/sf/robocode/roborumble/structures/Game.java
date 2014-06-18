@@ -9,8 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * @author Jack Wearden <jack@jackwearden.co.uk>
@@ -22,7 +20,7 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
     private int fieldWidth;
     private int fieldHeight;
     private Bot[] bots = null;
-    private Queue<Battle> battleQueue = new LinkedList<Battle>();
+    private Battle nextBattle;
     private int rounds;
 
     private Tournament tournament;
@@ -104,32 +102,30 @@ public class Game extends ServerObject implements Iterator<Battle>, Iterable<Bat
     @Override
     public boolean hasNext() {
         System.out.println("checking battle queue");
-        if (battleQueue.size() == 0) {
-            JsonElement queue;
-            try {
-                queue = ServerObjectBuilder.getJSONFromServer(new URL(tournament.url + this.uri + "/battlequeue"));
-                System.out.println(queue);
-                JsonArray a = queue.getAsJsonArray();
-                for (Battle b : ServerObjectBuilder.getGson().fromJson(a, Battle[].class)) {
-                    b.setGame(this);
-                    battleQueue.add(b);
-                }
-            } catch (DownloadFailedException e) {
-                System.err.println("DFE @ Game.hasNext");
-                return false;
-            } catch (MalformedURLException e) {
-                System.err.println("MalURLEx @ Game.hasNext");
-                return false;
-            }
+        JsonElement queue;
+        try {
+            queue = ServerObjectBuilder.getJSONFromServer(new URL(tournament.url + this.uri + "/battlequeue"));
+            System.out.println(queue);
+            JsonArray a = queue.getAsJsonArray();
+            System.out.println("This far");
+            nextBattle = ServerObjectBuilder.getGson().fromJson(a, Battle.class);
+            nextBattle.setGame(this);
+        } catch (DownloadFailedException e) {
+            System.err.println("DFE @ Game.hasNext");
+            return false;
+        } catch (MalformedURLException e) {
+            System.err.println("MalURLEx @ Game.hasNext");
+            return false;
+        } catch (IllegalStateException e) {
+            // Invalid JSON - probably empty battlequeue
+            return false;
         }
         return true;
     }
 
     @Override
     public Battle next() {
-        System.out.println("Yielding next battle");
-        System.out.print(battleQueue.peek());
-        return battleQueue.remove();
+        return this.nextBattle;
     }
 
     @Override
