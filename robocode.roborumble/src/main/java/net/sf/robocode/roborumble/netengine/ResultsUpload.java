@@ -9,7 +9,6 @@ package net.sf.robocode.roborumble.netengine;
 
 
 import net.sf.robocode.roborumble.battlesengine.CompetitionsSelector;
-import static net.sf.robocode.roborumble.util.PropertiesUtil.getProperties;
 
 import java.io.*;
 import java.net.URL;
@@ -17,6 +16,7 @@ import java.net.URLConnection;
 import java.util.Properties;
 import java.util.Vector;
 
+import static net.sf.robocode.roborumble.util.PropertiesUtil.getProperties;
 
 /**
  * Class used for uploading results to a server.
